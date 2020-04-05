@@ -22,8 +22,10 @@ private:
     bool DeclarationRule( std::vector< std::pair< std::string, std::string >> statement );
     bool AssignRule( std::vector< std::pair< std::string, std::string >> statement );
     bool ExpressionRule( std::vector< std::pair< std::string, std::string >> statement, int i );
-    bool TermRule();
-    bool FactorRule();
+    bool ExpPrime( std::vector< std::pair< std::string, std::string >> statement, int i );
+    bool TermRule( std::vector< std::pair< std::string, std::string >> statement, int i );
+    bool TermPrime( std::vector< std::pair< std::string, std::string >> statement, int i );
+    bool FactorRule( std::vector< std::pair< std::string, std::string >> statement, int i );
 };
 
 
@@ -32,12 +34,12 @@ Parser::Parser( Lexer lex ) {
     std::pair<std::string, std::string> tmp;
     do {
         do {
-            tmp = lex.getNextLexeme();                                  // get the next lexeme (pair of lexeme and token)
+            tmp = lex.getNextLexeme();                                    // get the next lexeme (pair of lexeme and token)
             statement.push_back( tmp );                                   // push into the queue
         } while( std::count( sep.begin(), sep.end(), tmp.first ) );       // check if lexeme is a separator ? break out of while; get next lexeme
         if( !SyntaxAnalysis(statement) )
             std::cerr << "Syntactical Error\n";
-    } while( !lex.isEmpty() );                                          // loop until syntactical error is found or we've reached the end of the lexer queue
+    } while( !lex.isEmpty() );                                            // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
 bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string >> statement ) {
@@ -48,9 +50,9 @@ bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string >>
         return true;
     } else if ( ExpressionRule(statement, 0) ) {
         return true;
-    } else if ( TermRule() ) {
+    } else if ( TermRule(statement, 0) ) {
         return true;
-    } else if ( FactorRule() ) {
+    } else if ( FactorRule(statement, 0) ) {
         return true;
     }
 
@@ -72,14 +74,39 @@ bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statem
     if( tmp.first == "Identifier" ) {
         tmp = statement.at(1);
         if( tmp.second == "=" ) {
-            ExpressionRule( statement, 2 );
+            if( ExpressionRule( statement, 2 ) )
+                return true;
         }
     }
     return false;
 }
 
 bool Parser::ExpressionRule( std::vector< std::pair< std::string, std::string >> statement, int i ) {
-        std::pair<std::string, std::string> tmp = statement.at(i);
+    std::pair<std::string, std::string> tmp = statement.at(i);
+    
+    return false;
+}
+
+bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string >> statement, int i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i);
+    
+    return false;
+}
+
+bool Parser::TermRule( std::vector< std::pair< std::string, std::string >> statement, int i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i);
+    
+    return false;
+}
+
+bool Parser::TermPrime( std::vector< std::pair< std::string, std::string >> statement, int i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i);
+    
+    return false;
+}
+
+bool Parser::FactorRule( std::vector< std::pair< std::string, std::string >> statement, int i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i);
     
     return false;
 }
