@@ -19,9 +19,11 @@ public:
     
 private:
     bool SyntaxAnalysis(std::queue< std::pair< std::string, std::string >> statement);
-    bool DeclarationRule();
-    bool AssignRule();
+    bool DeclarationRule(std::queue< std::pair< std::string, std::string >> statement);
+    bool AssignRule(std::queue< std::pair< std::string, std::string >> statement);
     bool ExpressionRule();
+    bool TermRule();
+    bool FactorRule();
 };
 
 
@@ -33,10 +35,21 @@ ParseTree::ParseTree(Lexer lex) {
             tmp = lex.getNextLexeme();                                  // get the next lexeme (pair of lexeme and token)
             statement.push(tmp);                                        // push into the queue
         } while( std::count(sep.begin(), sep.end(), tmp.first) );       // check if lexeme is a separator ? break out of while; get next lexeme
-    } while( SyntaxAnalysis(statement) || !lex.isEmpty() );             // loop until syntactical error is found or we've reached the end of the lexer queue
+        if( !SyntaxAnalysis(statement) )
+            std::cerr << "Syntactical Error\n";
+    } while( !lex.isEmpty() );                                          // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
 bool ParseTree::SyntaxAnalysis(std::queue< std::pair< std::string, std::string >> statement) {
+    DeclarationRule(statement);
+    
+    AssignRule(statement);
+    
+    ExpressionRule();
+    
+    TermRule();
+    
+    FactorRule();
     
     return true;
 }
