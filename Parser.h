@@ -34,12 +34,12 @@ Parser::Parser( Lexer lex ) {
     std::pair<std::string, std::string> tmp;
     do {
         do {
-            tmp = lex.getNextLexeme();                                    // get the next lexeme (pair of lexeme and token)
-            statement.push_back( tmp );                                   // push into the queue
-        } while( std::count( sep.begin(), sep.end(), tmp.first ) );       // check if lexeme is a separator ? break out of while; get next lexeme
-//        if( !SyntaxAnalysis(statement) )
-//            std::cerr << "Syntactical Error\n";
-    } while( !lex.isEmpty() );                                            // loop until syntactical error is found or we've reached the end of the lexer queue
+            tmp = lex.getNextLexeme();                                       // get the next lexeme (pair of lexeme and token)
+            statement.emplace_back( tmp );                                   // push into the queue
+        } while( tmp.first != "Separator");                                  // check if lexeme is a separator ? break out of while; get next lexeme
+        if( !SyntaxAnalysis(statement) )
+            std::cerr << "Syntactical Error\n";
+    } while( !lex.isEmpty() );                                                // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
 bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string >> statement ) {
