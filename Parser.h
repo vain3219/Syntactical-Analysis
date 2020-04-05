@@ -18,21 +18,23 @@ public:
     Parser(Lexer lex);
     
 private:
-    bool SyntaxAnalysis( std::vector< std::pair< std::string, std::string >> statement );
-    bool DeclarationRule( std::vector< std::pair< std::string, std::string >> statement );
-    bool AssignRule( std::vector< std::pair< std::string, std::string >> statement, int &i );
-    bool ExpressionRule( std::vector< std::pair< std::string, std::string >> statement, int &i );
-    bool ExpPrime( std::vector< std::pair< std::string, std::string >> statement, int &i );
-    bool TermRule( std::vector< std::pair< std::string, std::string >> statement, int &i );
-    bool TermPrime( std::vector< std::pair< std::string, std::string >> statement, int &i );
-    bool FactorRule( std::vector< std::pair< std::string, std::string >> statement, int &i );
+    bool SyntaxAnalysis( std::vector< std::pair< std::string, std::string > > statement );
+    bool DeclarationRule( std::vector< std::pair< std::string, std::string > > statement );
+    bool AssignRule( std::vector< std::pair< std::string, std::string > > statement, int &i );
+    bool ExpressionRule( std::vector< std::pair< std::string, std::string > > statement, int &i );
+    bool ExpPrime( std::vector< std::pair< std::string, std::string > > statement, int &i );
+    bool TermRule( std::vector< std::pair< std::string, std::string > > statement, int &i );
+    bool TermPrime( std::vector< std::pair< std::string, std::string > > statement, int &i );
+    bool FactorRule( std::vector< std::pair< std::string, std::string > > statement, int &i );
 };
 
 
 Parser::Parser( Lexer lex ) {
-    std::vector< std::pair< std::string, std::string >> statement;
+    int x = 1;
+    std::vector< std::pair< std::string, std::string > > statement;
     std::pair<std::string, std::string> tmp;
     do {
+        std::cout << "Statement #:" << x++ << std::endl;
         do {
             tmp = lex.getNextLexeme();                                       // get the next lexeme (pair of lexeme and token)
             statement.emplace_back( tmp );                                   // push into the queue
@@ -42,7 +44,7 @@ Parser::Parser( Lexer lex ) {
     } while( !lex.isEmpty() );                                                // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
-bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string >> statement ) {
+bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string > > statement ) {
     int i = 0;
     if( DeclarationRule(statement) ) {
         return true;
@@ -81,36 +83,51 @@ bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statem
     return false;
 }
 
-bool Parser::ExpressionRule( std::vector< std::pair< std::string, std::string >> statement, int &i ) {
+bool Parser::ExpressionRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     return( TermRule(statement, i) && ExpPrime(statement, i) );
 }
 
-bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string >> statement, int &i ) {
-    std::pair<std::string, std::string> tmp = statement.at(i);
-    // if "+"
-    // else if "-"
-    // else
+bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i++);
+    if( tmp.second == "+" ) {
+        return( TermRule(statement, i) && ExpPrime(statement, i) );
+    } else if( tmp.second == "-" ) {
+        return( TermRule(statement, i) && ExpPrime(statement, i) );
+    } else {
+        //epsilon
+    }
     return false;
 }
 
-bool Parser::TermRule( std::vector< std::pair< std::string, std::string >> statement, int &i ) {
+bool Parser::TermRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     return ( FactorRule(statement, i) && TermPrime(statement, i) );
 }
 
-bool Parser::TermPrime( std::vector< std::pair< std::string, std::string >> statement, int &i ) {
-    std::pair<std::string, std::string> tmp = statement.at(i);
-    // if "*"
-    // else if "/"
-    // else
+bool Parser::TermPrime( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i++);
+    if( tmp.second == "*" ) {
+        return( FactorRule(statement, i) && TermPrime(statement, i) );
+    } else if( tmp.second == "/" ) {
+        return( FactorRule(statement, i) && TermPrime(statement, i) );
+    } else {
+        //epsilon
+    }
     return false;
 }
 
-bool Parser::FactorRule( std::vector< std::pair< std::string, std::string >> statement, int &i ) {
-    std::pair<std::string, std::string> tmp = statement.at(i);
-    // if "("
-    //      ExpressionRule(statement, i);
-    // else if(tmp.first == "Identifier")
-    // else if(tmp.first == "Integer")
+bool Parser::FactorRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
+    std::pair<std::string, std::string> tmp = statement.at(i++);
+    if( tmp.second == "(" ) {
+        if( ExpressionRule(statement, i) ) {
+            tmp = statement.at(i++);
+            if( tmp.second == ")" )
+                return true;
+        }
+    } else if( tmp.first == "Identifier" ) {
+        return true;
+    } else if( tmp.first == "Integer" ) {
+        return true;
+    }
     return false;
 }
 #endif /* Parser_h */
