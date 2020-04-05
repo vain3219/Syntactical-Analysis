@@ -41,6 +41,8 @@ Parser::Parser( Lexer lex ) {
         } while( tmp.first != "Separator");                                  // check if lexeme is a separator ? break out of while; get next lexeme
         if( !SyntaxAnalysis(statement) )
             std::cerr << "Syntactical Error\n";
+        else
+            std::cout << "No error detected\n";
     } while( !lex.isEmpty() );                                                // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
@@ -73,6 +75,7 @@ bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >>
 
 bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i++);
+    int x = i;
     if( tmp.first == "Identifier" ) {
         tmp = statement.at(i++);
         if( tmp.second == "=" ) {
@@ -80,6 +83,7 @@ bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statem
                 return true;
         }
     }
+    i = x;
     return false;
 }
 
@@ -89,13 +93,16 @@ bool Parser::ExpressionRule( std::vector< std::pair< std::string, std::string > 
 
 bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i++);
+    int x = i;
     if( tmp.second == "+" ) {
         return( TermRule(statement, i) && ExpPrime(statement, i) );
     } else if( tmp.second == "-" ) {
+        i = x;
         return( TermRule(statement, i) && ExpPrime(statement, i) );
     } else {
         //epsilon
     }
+    i = x;
     return false;
 }
 
@@ -105,13 +112,16 @@ bool Parser::TermRule( std::vector< std::pair< std::string, std::string > > stat
 
 bool Parser::TermPrime( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i++);
+    int x = i;
     if( tmp.second == "*" ) {
         return( FactorRule(statement, i) && TermPrime(statement, i) );
     } else if( tmp.second == "/" ) {
+        i = x;
         return( FactorRule(statement, i) && TermPrime(statement, i) );
     } else {
         //epsilon
     }
+    i = x;
     return false;
 }
 
