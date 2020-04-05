@@ -1,5 +1,4 @@
 # Syntactical-Analysis
 
 ## Grammar Rules
-
-![Alt text](grammars.pdf?raw=true "Optional Title")
+https://github.com/vain3219/Syntactical-Analysis/blob/master/grammars.pdf
