@@ -66,4 +66,17 @@ bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >>
     return false;
 }
 
+bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statement) {
+    std::pair<std::string, std::string> tmp = statement.at(0);
+    
+    if(tmp.second == "Identifier") {
+        tmp = statement.at(1);
+        if(tmp.first == "=") {
+            tmp = statement.at(2);
+            // call ExpressionRule()
+        }
+    }
+    return false;
+}
+
 #endif /* Parser_h */
