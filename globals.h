@@ -13,12 +13,6 @@ enum state{NONE, ENTRY, IDENTIFIER, INTEGER, IN_FLOAT, FLOAT, UNKNOWN, OPERATOR,
 std::string keyAr[] = {"int", "float", "bool", "true", "false", "if", "else", "then", "endif", "while", "whileend", "do", "doend", "for", "forend", "input", "output", "and", "or", "not"};
 std::vector<std::string> op{"*", "+", "-", "=", "/", ">", "<", "%"};
 std::vector<std::string> sep{"'", "(" ,")" ,"{" ,"}" ,"[" ,"]" ,"," ,"." ,":" ,";"};
-
-
-struct leaf {
-    leaf* left;
-    leaf* right;
-    std::pair< std::string , std::string > e;
-};
+std::vector<std::string> type{"int", "float", "bool", "string", "char", "long"};
 
 #endif /* globals_h */
