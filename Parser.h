@@ -37,8 +37,8 @@ Parser::Parser( Lexer lex ) {
             tmp = lex.getNextLexeme();                                    // get the next lexeme (pair of lexeme and token)
             statement.push_back( tmp );                                   // push into the queue
         } while( std::count( sep.begin(), sep.end(), tmp.first ) );       // check if lexeme is a separator ? break out of while; get next lexeme
-        if( !SyntaxAnalysis(statement) )
-            std::cerr << "Syntactical Error\n";
+//        if( !SyntaxAnalysis(statement) )
+//            std::cerr << "Syntactical Error\n";
     } while( !lex.isEmpty() );                                            // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
@@ -61,7 +61,7 @@ bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string >>
 
 bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >> statement) {
     std::pair<std::string, std::string> tmp = statement.at(0);
-    if( std::count(sep.begin(), sep.end(), tmp.first) ) {
+    if( std::count(type.begin(), type.end(), tmp.second) ) {
         tmp = statement.at(1);
         if( tmp.first == "Identifier")
             return true;
