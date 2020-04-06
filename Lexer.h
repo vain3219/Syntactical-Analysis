@@ -35,6 +35,7 @@ FUNCTIONS for the Lexer class:
 #include <vector>
 #include <regex>
 #include "globals.h"
+#include <iomanip>
 
 class Lexer
 {
