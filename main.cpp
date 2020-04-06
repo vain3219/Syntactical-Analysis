@@ -7,13 +7,12 @@
 //
 
 #include "Lexer.h"
-#include "ParseTree.h"
+#include "Parser.h"
 
 int main( int argc, const char * argv[] ) {
     std::string srcFile = "/Users/codythompson/Documents/Code/Syntax Analyzer/Syntax Analyzer/myfile.txt";              // This will eventually be passed into the program as an arguement
     Lexer lex(srcFile);
-    
-    lex.output();
+    Parser parse(lex);
     
     return 0;
 }
