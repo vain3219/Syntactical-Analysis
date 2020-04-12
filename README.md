@@ -19,3 +19,14 @@ ________________________________________________________________________________
  * First(T)  = First(E)  = { (, i, num }
  * First(T') = { * , /, ε }
  * First(F)  = First(E)  = { (, i, num }
+
+
+## FOLLOW(α)
+ * Follow(S)  = { $ }
+ * Follow(D)  = { $ }
+ * Follow(A)  = { $ }
+ * Follow(E)  = { ), $ }
+ * Follow(E') = { (, $ }
+ * Follow(T)  = { +, -, ), $ }
+ * Follow(T') = { +, -, ), $ }
+ * Follow(F)  = { * , /, +, -, ), $ }
