@@ -26,6 +26,10 @@ private:
     bool TermRule( std::vector< std::pair< std::string, std::string > > statement, int &i );
     bool TermPrime( std::vector< std::pair< std::string, std::string > > statement, int &i );
     bool FactorRule( std::vector< std::pair< std::string, std::string > > statement, int &i );
+    void PrintProductions();
+    
+    // Attributes
+    std::stack<std::string> productions;
 };
 
 
@@ -39,33 +43,28 @@ Parser::Parser( Lexer lex ) {
             tmp = lex.getNextLexeme();                                       // get the next lexeme (pair of lexeme and token)
             statement.emplace_back( tmp );                                   // push into the queue
         } while( tmp.first != "Separator");                                  // check if lexeme is a separator ? break out of while; get next lexeme
-        
+        statement.emplace_back("$");
         for(int i = 0; i < statement.size(); i++) {
             tmp = statement.at(i);
             std::cout << tmp.second << " ";
         }
-        std::cout << "\n size = " << statement.size() << std::endl;
+        std::cout << std::endl;
         if( !SyntaxAnalysis(statement) )
-            std::cerr << "\nSyntactical Error\n";
+            std::cerr << "\nSyntactical Error\n\n";
         else
-            std::cout << "\nNo error detected\n";
+            std::cout << "\nNo error detected\n\n";
+        PrintProductions();
         statement.clear();
-        std::cout << "\n size = " << statement.size() << std::endl;
     } while( !lex.isEmpty() );                                                // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
 bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string > > statement ) {
     int i = 0;
+    
     if( DeclarationRule(statement) ) {
-        return true;
-    } else if ( AssignRule(statement, i) ) {
-        return true;
-    } else if ( ExpressionRule(statement, i) ) {
-        return true;
-    } else if ( TermRule(statement, i) ) {
-        return true;
-    } else if ( FactorRule(statement, i) ) {
-        return true;
+        productions.push("S -> D\n");
+    } else if (AssignRule(statement, i )) {
+        productions.push("S -> A\n");
     }
 
     return false;
@@ -73,10 +72,10 @@ bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string > 
 
 bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >> statement) {
     std::pair<std::string, std::string> tmp = statement.at(0);
-    std::cout << "Declaritive Rule\n";
-    if( std::count(type.begin(), type.end(), tmp.second) ) {
+    if( std::count(type.begin(), type.end(), tmp.second) ) {        // First(D)
         tmp = statement.at(1);
         if( tmp.first == "Identifier")
+            productions.push("D -> Type id\n");
             return true;
     }
     return false;
@@ -84,13 +83,12 @@ bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >>
 
 bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i++);
-    std::cout << "Assignation Rule\n";
     int x = i;
-    if( tmp.first == "Identifier" ) {
-        std::cout << "\tIdentifier found\n";
+    if( tmp.first == "Identifier" ) {                               // First(A)
         tmp = statement.at(i++);
         if( tmp.second == "=" ) {
             if( ExpressionRule( statement, i ) )
+                productions.push("A -> id = E\n");
                 return true;
         }
     }
@@ -99,54 +97,90 @@ bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statem
 }
 
 bool Parser::ExpressionRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
-    std::cout << "Expression Rule\n";
-    return( TermRule(statement, i) && ExpPrime(statement, i) );
+    std::pair<std::string, std::string> tmp = statement.at(i);
+    if( TermRule(statement, i) ) {                                  // First(E)
+        if( ExpPrime(statement, i) ) {
+            productions.push("E -> TE'\n");
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i++);
-    std::cout << "Expression Prime Rule\n";
     if( tmp.second == "+" || tmp.second == "-" ) {
-        std::cout << "\t+ or - found\n";
-        return( TermRule(statement, i) && ExpPrime(statement, i) );
-    } else { //epsilon
-        return true;
+        if( TermRule(statement, i) ) {                              // First(E')
+            if( ExpPrime(statement, i) ) {
+                productions.push("E' -> +TE' | -TE'\n");
+                return true;
+            }
+        }
+    } else {                                                        // Follow(E')
+        if( tmp.second == ")" || tmp.second == "$" ) {              // Follow(E') book pg104
+            i--;
+            productions.push("E' -> e\n");
+            return true;
+        }
     }
     return false;
 }
 
 bool Parser::TermRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
-    std::cout << "Term Rule\n";
-    return ( FactorRule(statement, i) && TermPrime(statement, i) );
+    if( FactorRule(statement, i) ) {
+        if( TermPrime(statement, i) ) {                             // First(T)
+            productions.push("T -> FT'\n");
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Parser::TermPrime( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i);
-    std::cout << "Term Prime Rule\n\t" << i << std::endl;
-    if( tmp.second == "*" || tmp.second == "/" ) {
-        std::cout << "\t* or \\ found\n";
-        return( FactorRule(statement, i) && TermPrime(statement, i) );
-    } else { //epsilon
-        return true;
+    if( tmp.second == "*" || tmp.second == "/" ) {                  // First(T')
+        if( FactorRule(statement, i) ) {
+            if( TermPrime(statement, i) ) {
+                productions.push("T' -> *FT' | /FT'\n");
+                return true;
+            }
+        }
+    } else {                                                        // Follow(T')
+        if( tmp.second == ")" || tmp.second == "+" || tmp.second == "-" || tmp.second == "$" ) {
+           i--;
+           productions.push("T' -> e\n");
+           return true;
+       }
     }
     return false;
 }
 
 bool Parser::FactorRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
-     std::cout << "Factor Rule\n";
     std::pair<std::string, std::string> tmp = statement.at(i++);
-    if( tmp.second == "(" ) {
+    if( tmp.second == "(" ) {                                       // First(F)
         if( ExpressionRule(statement, i) ) {
             tmp = statement.at(i++);
             if( tmp.second == ")" )
+                productions.push("F -> (E)\n");
                 return true;
         }
     } else if( tmp.first == "Identifier" ) {
+        productions.push("F -> id\n");
         return true;
     } else if( tmp.first == "Integer" ) {
+        productions.push("F -> num\n");
         return true;
     }
     return false;
+}
+
+void Parser::PrintProductions() {
+    std::string e;
+    while( !productions.empty() ) {
+        e = productions.top();
+        std::cout << e << std::endl;
+        productions.pop();
+    }
 }
 #endif /* Parser_h */
 
