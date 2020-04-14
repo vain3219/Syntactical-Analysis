@@ -36,42 +36,43 @@ Parser::Parser( Lexer lex ) {
     std::pair<std::string, std::string> tmp;
     do {
         do {
-            tmp = lex.getNextLexeme();                                       // get the next lexeme (pair of lexeme and token)
-            statement.emplace_back( tmp );                                   // push into the queue
-        } while( tmp.first != "Separator");                                  // check if lexeme is a separator ? break out of while; get next lexeme
-        statement.emplace_back( std::make_pair("$", "$") );
-        for(int i = 0; i < statement.size(); i++) {
+            tmp = lex.getNextLexeme();                                          // get the next lexeme (pair of lexeme and token)
+            statement.emplace_back( tmp );                                      // push into the queue
+        } while( tmp.first != "Separator");                                     // check if lexeme is a separator ? break out of while; get next lexeme
+        statement.pop_back();                                                   // delete the separator ( ';' is not included in any productions )
+        statement.emplace_back( std::make_pair("$", "$") );                     // add the '$' to the end of the statement to signify the end
+        for(int i = 0; i < statement.size(); i++) {                             // print the statement being processed
             tmp = statement.at(i);
             std::cout << tmp.second << " ";
         }
-        if( !SyntaxAnalysis(statement) )
-            std::cerr << "\nSyntactical Error\n";
+        if( !SyntaxAnalysis(statement) )                                        // begin the analysis
+            std::cerr << "\nSyntactical Error\n";                               // illegal
         else
-            std::cout << "\nNo error detected\n";
-        statement.clear();
+            std::cout << "\nNo error detected\n";                               // legal
+        statement.clear();                                                      // clear statement vector
         PrintProductions();
-    } while( !lex.isEmpty() );                                                // loop until syntactical error is found or we've reached the end of the lexer queue
+    } while( !lex.isEmpty() );                                                  // loop until syntactical error is found or we've reached the end of the lexer queue
 }
 
 bool Parser::SyntaxAnalysis( std::vector< std::pair< std::string, std::string > > statement ) {
     int i = 0;
     
-    if( DeclarationRule(statement) ) {
+    if( DeclarationRule( statement ) ) {                                        // check declaration grammar
         productions.push("S -> D\n");
-    } else if (AssignRule(statement, i )) {
+    } else if ( AssignRule( statement, i ) ) {                                  // check assignation grammar
         productions.push("S -> A\n");
     }
-
+    
     return false;
 }
 
 bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >> statement) {
     std::pair<std::string, std::string> tmp = statement.at(0);
-    if( std::count(type.begin(), type.end(), tmp.second) ) {        // First(D)
+    if( std::count(type.begin(), type.end(), tmp.second) ) {                    // First(D)
         tmp = statement.at(1);
         if( tmp.first == "Identifier")
             productions.push("D -> Type id\n");
-            return true;
+        return true;
     }
     return false;
 }
@@ -79,12 +80,12 @@ bool Parser::DeclarationRule(std::vector< std::pair< std::string, std::string >>
 bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i++);
     int x = i;
-    if( tmp.first == "Identifier" ) {                               // First(A)
+    if( tmp.first == "Identifier" ) {                                           // First(A)
         tmp = statement.at(i++);
         if( tmp.second == "=" ) {
-            if( ExpressionRule( statement, i ) )
+            if( ExpressionRule( statement, i ) )                                // check expression grammar
                 productions.push("A -> id = E\n");
-                return true;
+            return true;
         }
     }
     i = x;
@@ -94,8 +95,8 @@ bool Parser::AssignRule(std::vector<std::pair<std::string, std::string> > statem
 bool Parser::ExpressionRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     std::pair<std::string, std::string> tmp = statement.at(i);
     int x = i;
-    if( TermRule(statement, i) ) {                                  // First(E)
-        if( ExpPrime(statement, i) ) {
+    if( TermRule( statement, i ) ) {                                            // First(E)
+        if( ExpPrime( statement, i ) ) {
             productions.push("E -> TE'\n");
             return true;
         }
@@ -108,15 +109,14 @@ bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string > > stat
     std::pair<std::string, std::string> tmp = statement.at(i++);
     int x = i;
     if( tmp.second == "+" || tmp.second == "-" ) {
-        if( TermRule(statement, i) ) {                              // First(E')
-            if( ExpPrime(statement, i) ) {
+        if( TermRule( statement, i ) ) {                              // First(E')
+            if( ExpPrime( statement, i ) ) {
                 productions.push("E' -> +TE' | -TE'\n");
                 return true;
             }
         }
     } else {                                                        // Follow(E')
-        if( tmp.second == ")" || tmp.second == "$" ) {              // Follow(E') book pg104
-            i--;
+        if( tmp.second == ")" || tmp.second == "$" ) {              
             productions.push("E' -> e\n");
             return true;
         }
@@ -127,8 +127,8 @@ bool Parser::ExpPrime( std::vector< std::pair< std::string, std::string > > stat
 
 bool Parser::TermRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
     int x = i;
-    if( FactorRule(statement, i) ) {
-        if( TermPrime(statement, i) ) {                             // First(T)
+    if( FactorRule( statement, i ) ) {
+        if( TermPrime( statement, i ) ) {                             // First(T)
             productions.push("T -> FT'\n");
             return true;
         }
@@ -141,32 +141,31 @@ bool Parser::TermPrime( std::vector< std::pair< std::string, std::string > > sta
     std::pair<std::string, std::string> tmp = statement.at(i);
     int x = i;
     if( tmp.second == "*" || tmp.second == "/" ) {                  // First(T')
-        if( FactorRule(statement, i) ) {
-            if( TermPrime(statement, i) ) {
+        if( FactorRule( statement, i ) ) {
+            if( TermPrime( statement, i ) ) {
                 productions.push("T' -> *FT' | /FT'\n");
                 return true;
             }
         }
     } else {                                                        // Follow(T')
         if( tmp.second == ")" || tmp.second == "+" || tmp.second == "-" || tmp.second == "$" ) {
-           i--;
-           productions.push("T' -> e\n");
-           return true;
-       }
+            productions.push("T' -> e\n");
+            return true;
+        }
     }
     i = x;
     return false;
 }
 
 bool Parser::FactorRule( std::vector< std::pair< std::string, std::string > > statement, int &i ) {
-    std::pair<std::string, std::string> tmp = statement.at(i++);
+    std::pair<std::string, std::string> tmp = statement.at(i++);\
     int x = i;
     if( tmp.second == "(" ) {                                       // First(F)
-        if( ExpressionRule(statement, i) ) {
+        if( ExpressionRule( statement, i ) ) {
             tmp = statement.at(i++);
             if( tmp.second == ")" )
                 productions.push("F -> (E)\n");
-                return true;
+            return true;
         }
     } else if( tmp.first == "Identifier" ) {
         productions.push("F -> id\n");
