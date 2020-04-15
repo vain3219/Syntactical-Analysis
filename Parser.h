@@ -161,9 +161,10 @@ bool Parser::FactorRule( std::vector< std::pair< std::string, std::string > > st
         i++;
         if( ExpressionRule( statement ) ) {
             tmp = statement.at(i);
-            if( tmp.second == ")" )
+            if( tmp.second == ")" ) {
                 std::cout << tmp.second + "\t\tF -> (E)\n";
-            return true;
+                return true;
+            }
         }
     } else if( tmp.first == "Identifier" ) {
         i++;
