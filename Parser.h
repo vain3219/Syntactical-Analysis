@@ -21,23 +21,24 @@ CONSTRUCTORS for the Parser class:
             to the Parser as a parameter
         Postcondition: Parser object has been initialized and statements of lexer and token pairs will be analyzed
 FUNCTIONS for the Parser Class:
-    bool SyntaxAnalysis(std::vector<std::pair<std::string, std::string>>statement)
+    bool SyntaxAnalysis()
         Postcondition: Checks statement against grammars for declarations and assignments and returns true if statement is valid; else it returns false
-    bool DeclarationRule(std::vector<std::pair<std::string, std::string>>statement)
+    bool DeclarationRule()
         Postcondition: Returns true if passed statement is a valid declaration
-    bool AssignRule(std::vector<std::pair<std::string, std::string>>statement)
-        Postcondition: Calls on ExpressionRule function; if ExpressionRule returns True, will return true if passed statement is a valid asignation
-    bool ExpressionRule(std::vector<std::pair<std::string, std::string>>statement)
-        Postcondition: If TermRule and ExpPrime functions return true, will resturn true is passed statement is a valid expression
-    bool ExpPrime(std::vector<std::pair<std::string, std::string>>statement)
+    bool AssignRule()
+        Postcondition: Calls on ExpressionRule function; if ExpressionRule returns True, will return true if statement is a valid asignation
+    bool ExpressionRule()
+        Postcondition: If TermRule and ExpPrime functions return true, will resturn true if statement is a valid expression
+    bool ExpPrime()
         Postcondition: Handles end of statement for expression rule; if TermRule and ExpPrime functions return true, if end of statement is found, will return true
-    bool TermRule(std::vector<std::pair<std::string, std::string>>statement)
+    bool TermRule()
         Postcondition: If FactorRule and TermPrime functions return true, will return true if statement is a valid term
-    bool TermPrime(std::vector<std::pair<std::string, std::string>>statement)
+    bool TermPrime()
         Postcondition: Handles end of statement for term rule; if FactorRule and TermPrime functions return true or if end of statement is found, will return true
-    bool FactorRule(std::vector<std::pair<std::string, std::string>>statement)
+    bool FactorRule()
         Postcondition: if ExpressionRule function, end of statement return true, will return true
     void PrintProductions()
+        Postcondition: Prints productions and lexemes and tokens
 */
 
 #include "Lexer.h"
